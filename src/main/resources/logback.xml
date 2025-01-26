@@ -1,6 +1,6 @@
 <configuration>
 
-    <property name="HOME_LOG" value="/var/log/example.org/tg-simple-bot/app.log"/>
+    <property name="HOME_LOG" value="${LOG_FILE_PATH:-/default/path/to/logs}"/>
 
     <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${HOME_LOG}</file>
@@ -10,7 +10,7 @@
             <!-- each archived file, size max 10MB -->
             <maxFileSize>100MB</maxFileSize>
             <!-- total size of all archive files, if total size > 20GB, it will delete old archived file -->
-            <totalSizeCap>1GB</totalSizeCap>
+            <totalSizeCap>2GB</totalSizeCap>
             <!-- 60 days to keep -->
             <maxHistory>60</maxHistory>
         </rollingPolicy>
@@ -23,10 +23,6 @@
     <logger name="org.example.javademobot" level="debug" additivity="false">
         <appender-ref ref="FILE-ROLLING"/>
     </logger>
-
-    <root level="error">
-        <appender-ref ref="FILE-ROLLING"/>
-    </root>
 
     <root level="info">
         <appender-ref ref="FILE-ROLLING"/>

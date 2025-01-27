@@ -54,6 +54,7 @@ build/
 
 # Environment files
 .env
+*.sh
 
 # Lombok generated files
 .lombok/

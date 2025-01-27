@@ -1,6 +1,5 @@
 <configuration>
-
-    <property name="HOME_LOG" value="${LOG_FILE_PATH:-/default/path/to/logs}"/>
+    <property name="HOME_LOG" value="${LOG_FILE_PATH}"/>
 
     <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${HOME_LOG}</file>

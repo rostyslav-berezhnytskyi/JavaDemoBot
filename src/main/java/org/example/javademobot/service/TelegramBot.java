@@ -1,5 +1,7 @@
 package org.example.javademobot.service;
 
+import com.vdurmont.emoji.Emoji;
+import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
 import org.example.javademobot.config.BotConfig;
 import org.example.javademobot.model.User;
@@ -57,8 +59,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                 }
                 case "/get_time" -> sendMessage(chatId, "The current time of your request is " + LocalDateTime.now());
                 case "/help" -> sendMessage(chatId, HELP_TEXT);
-                case "/jaba" -> sendMessage(chatId, "kurka");
-                case "/kurka" -> sendMessage(chatId, "jaba");
+                case "/jaba" -> sendMessage(chatId, "kurka" + EmojiParser.parseToUnicode(":chicken:"));
+                case "/kurka" -> sendMessage(chatId, "jaba " + EmojiParser.parseToUnicode(":frog:"));
                 default -> sendMessage(chatId, "Sorry, command was not recognize");
             }
         }
@@ -83,7 +85,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void startCommandReceived(long chatId, String name) {
-        String answer = "Hi, " + name + ", nice to meet you!";
+        String emoji = EmojiParser.parseToUnicode(":blush:");
+        String answer = "Hi, " + name + ", nice to meet you! " + emoji;
         log.info("Replied to user " + name + " chatId: " + chatId);
         sendMessage(chatId, answer);
     }

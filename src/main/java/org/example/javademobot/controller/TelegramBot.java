@@ -1,48 +1,36 @@
-package org.example.javademobot.service;
+package org.example.javademobot.controller;
 
-import com.vdurmont.emoji.Emoji;
 import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
 import org.example.javademobot.config.BotConfig;
-import org.example.javademobot.model.User;
-import org.example.javademobot.repository.UserRepository;
+import org.example.javademobot.service.BotService;
+import org.example.javademobot.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
-    private UserRepository userRepository;
-    final BotConfig config;
-    static final String HELP_TEXT = """
-            This bot is created to demonstrate basic Java Spring Boot Telegram Bot possibilities
-            You can execute commands from the main menu on the left or by taping a command:
-            
-            Type /start to see a welcome message
-            
-            Type /mydata to see data stored about yourself
-            
-            Type /help to see this message again""";
-
+    private final UserService userService;
+    private final BotConfig config;
+    private final BotService botService;
 
     @Autowired
-    public TelegramBot(BotConfig config, UserRepository userRepository) {
+    public TelegramBot(BotConfig config, UserService userService, BotService botService) {
         this.config = config;
-        this.userRepository = userRepository;
+        this.userService = userService;
+        this.botService = botService;
         createListOfCommands();
     }
 
@@ -51,44 +39,19 @@ public class TelegramBot extends TelegramLongPollingBot {
         if(update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
+            Message msg = update.getMessage();
+            String response;
 
             switch (messageText) {
-                case "/start" -> {
-                    registerUser(update.getMessage());
-                    startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
-                }
-                case "/get_time" -> sendMessage(chatId, "The current time of your request is " + LocalDateTime.now());
-                case "/help" -> sendMessage(chatId, HELP_TEXT);
-                case "/jaba" -> sendMessage(chatId, "kurka" + EmojiParser.parseToUnicode(":chicken:"));
-                case "/kurka" -> sendMessage(chatId, "jaba " + EmojiParser.parseToUnicode(":frog:"));
-                default -> sendMessage(chatId, "Sorry, command was not recognize");
+                case "/start" -> response = botService.handleStartCommand(msg);
+                case "/get_time" -> response = botService.handleGetTime();
+                case "/help" -> response = botService.handleHelp();
+                case "/jaba" -> response = "kurka" + EmojiParser.parseToUnicode(":chicken:");
+                case "/kurka" -> response = "jaba " + EmojiParser.parseToUnicode(":frog:");
+                default -> response = "Sorry, command was not recognize";
             }
+            sendMessage(chatId, response);
         }
-    }
-
-    private void registerUser(Message msg) {
-        if(userRepository.findById(msg.getChatId()).isEmpty()) {
-            Long chatId = msg.getChatId();
-            Chat chat = msg.getChat();
-
-            User user = new User();
-            user.setChatId(chatId);
-            user.setFirstName(chat.getFirstName());
-            user.setLastName(chat.getLastName());
-            user.setUserName(chat.getUserName());
-            user.setRegisteredAt(new Timestamp(System.currentTimeMillis()));
-
-            userRepository.save(user);
-            log.info("user saved: " + user);
-        }
-        return;
-    }
-
-    private void startCommandReceived(long chatId, String name) {
-        String emoji = EmojiParser.parseToUnicode(":blush:");
-        String answer = "Hi, " + name + ", nice to meet you! " + emoji;
-        log.info("Replied to user " + name + " chatId: " + chatId);
-        sendMessage(chatId, answer);
     }
 
 

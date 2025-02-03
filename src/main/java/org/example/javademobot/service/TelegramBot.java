@@ -2,16 +2,21 @@ package org.example.javademobot.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.javademobot.config.BotConfig;
+import org.example.javademobot.model.User;
+import org.example.javademobot.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +24,7 @@ import java.util.List;
 @Slf4j
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
+    private UserRepository userRepository;
     final BotConfig config;
     static final String HELP_TEXT = """
             This bot is created to demonstrate basic Java Spring Boot Telegram Bot possibilities
@@ -30,9 +36,11 @@ public class TelegramBot extends TelegramLongPollingBot {
             
             Type /help to see this message again""";
 
+
     @Autowired
-    public TelegramBot(BotConfig config) {
+    public TelegramBot(BotConfig config, UserRepository userRepository) {
         this.config = config;
+        this.userRepository = userRepository;
         createListOfCommands();
     }
 
@@ -43,7 +51,10 @@ public class TelegramBot extends TelegramLongPollingBot {
             long chatId = update.getMessage().getChatId();
 
             switch (messageText) {
-                case "/start" -> startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
+                case "/start" -> {
+                    registerUser(update.getMessage());
+                    startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
+                }
                 case "/get_time" -> sendMessage(chatId, "The current time of your request is " + LocalDateTime.now());
                 case "/help" -> sendMessage(chatId, HELP_TEXT);
                 case "/jaba" -> sendMessage(chatId, "kurka");
@@ -51,6 +62,24 @@ public class TelegramBot extends TelegramLongPollingBot {
                 default -> sendMessage(chatId, "Sorry, command was not recognize");
             }
         }
+    }
+
+    private void registerUser(Message msg) {
+        if(userRepository.findById(msg.getChatId()).isEmpty()) {
+            Long chatId = msg.getChatId();
+            Chat chat = msg.getChat();
+
+            User user = new User();
+            user.setChatId(chatId);
+            user.setFirstName(chat.getFirstName());
+            user.setLastName(chat.getLastName());
+            user.setUserName(chat.getUserName());
+            user.setRegisteredAt(new Timestamp(System.currentTimeMillis()));
+
+            userRepository.save(user);
+            log.info("user saved: " + user);
+        }
+        return;
     }
 
     private void startCommandReceived(long chatId, String name) {

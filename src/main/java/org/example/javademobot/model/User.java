@@ -54,4 +54,15 @@ public class User {
     public void setRegisteredAt(Timestamp registeredAt) {
         this.registeredAt = registeredAt;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "chatId=" + chatId +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", userName='" + userName + '\'' +
+                ", registeredAt=" + registeredAt +
+                '}';
+    }
 }

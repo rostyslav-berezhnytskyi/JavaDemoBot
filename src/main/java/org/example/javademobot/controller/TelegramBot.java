@@ -44,11 +44,21 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             switch (messageText) {
                 case "/start" -> response = botService.handleStartCommand(msg);
-                case "/get_time" -> response = botService.handleGetTime();
-                case "/help" -> response = botService.handleHelp();
-                case "/jaba" -> response = "kurka" + EmojiParser.parseToUnicode(":chicken:");
-                case "/kurka" -> response = "jaba " + EmojiParser.parseToUnicode(":frog:");
-                default -> response = "Sorry, command was not recognize";
+                case "/get_time" -> response = botService.handleGetTime(msg);
+                case "/help" -> response = botService.handleHelp(msg);
+                case "/delete_my_data" -> response = botService.handleDeleteMyDataCommand(msg);
+                case "/jaba" -> {
+                    response = "kurka" + EmojiParser.parseToUnicode(":chicken:");
+                    log.info("Invoke /jaba command for user {} in chatId {}", msg.getChat().getUserName(), msg.getChatId());
+                }
+                case "/kurka" -> {
+                    response = "jaba " + EmojiParser.parseToUnicode(":frog:");
+                    log.info("Invoke /kurka command for user {} in chatId {}", msg.getChat().getUserName(), msg.getChatId());
+                }
+                default -> {
+                    response = "Sorry, command was not recognize";
+                    log.info("User use unrecognizable command {} in chatId {}", messageText, msg.getChatId());
+                }
             }
             sendMessage(chatId, response);
         }
@@ -70,10 +80,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void createListOfCommands() {
         List<BotCommand> listOfCommands = new ArrayList<>();
         listOfCommands.add(new BotCommand("/start", "get a welcom message"));
-        listOfCommands.add(new BotCommand("/mydata", "get your data stored"));
-        listOfCommands.add(new BotCommand("/deletedata", "delete my data stored"));
+//        listOfCommands.add(new BotCommand("/mydata", "get your data stored"));
+        listOfCommands.add(new BotCommand("/delete_my_data", "delete my data stored"));
         listOfCommands.add(new BotCommand("/help", "info how to use bot"));
-        listOfCommands.add(new BotCommand("/settings", "set your preferences"));
+//        listOfCommands.add(new BotCommand("/settings", "set your preferences"));
         listOfCommands.add(new BotCommand("/get_time", "return current date and time"));
         listOfCommands.add(new BotCommand("/jaba", "return kurka"));
         listOfCommands.add(new BotCommand("/kurka", "return jaba"));

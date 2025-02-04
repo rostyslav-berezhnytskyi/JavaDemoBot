@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -52,8 +53,8 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public User findById(Long id) {
-        return userRepository.findById(id).orElseThrow();
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
     }
 
     @Override

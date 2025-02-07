@@ -3,6 +3,7 @@ package org.example.javademobot.controller;
 import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
 import org.example.javademobot.config.BotConfig;
+import org.example.javademobot.model.User;
 import org.example.javademobot.service.BotService;
 import org.example.javademobot.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,12 @@ public class TelegramBot extends TelegramLongPollingBot {
             long chatId = update.getMessage().getChatId();
             Message msg = update.getMessage();
             String response;
+
+            if (messageText.contains("/send") && config.getBotOwner().equals(update.getMessage().getChat().getUserName()) ) {
+                String textToSen = EmojiParser.parseToUnicode(messageText.substring(messageText.indexOf(" ")));
+                List<User> users = userService.findAll();
+                users.forEach(u -> sendMessage(u.getChatId(), textToSen));
+            }
 
             switch (messageText) {
                 case "/start" -> response = botService.handleStartCommand(msg);

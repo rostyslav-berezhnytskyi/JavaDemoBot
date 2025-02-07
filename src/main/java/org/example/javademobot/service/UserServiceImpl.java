@@ -1,6 +1,7 @@
 package org.example.javademobot.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.example.javademobot.model.Role;
 import org.example.javademobot.model.User;
 import org.example.javademobot.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ public class UserServiceImpl implements UserService{
             user.setFirstName(chat.getFirstName());
             user.setLastName(chat.getLastName());
             user.setUserName(chat.getUserName());
+            user.setRole(Role.USER);
             user.setRegisteredAt(new Timestamp(System.currentTimeMillis()));
 
             userRepository.save(user);

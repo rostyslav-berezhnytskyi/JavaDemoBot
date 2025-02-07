@@ -3,6 +3,7 @@ package org.example.javademobot.controller;
 import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
 import org.example.javademobot.config.BotConfig;
+import org.example.javademobot.model.Role;
 import org.example.javademobot.model.User;
 import org.example.javademobot.service.BotService;
 import org.example.javademobot.service.UserService;
@@ -24,6 +25,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -48,10 +50,15 @@ public class TelegramBot extends TelegramLongPollingBot {
             Message msg = update.getMessage();
             String response;
 
-            if (messageText.contains("/send") && config.getBotOwner().equals(update.getMessage().getChat().getUserName()) ) {
-                String textToSen = EmojiParser.parseToUnicode(messageText.substring(messageText.indexOf(" ")));
-                List<User> users = userService.findAll();
-                users.forEach(u -> sendMessage(u.getChatId(), textToSen));
+            if (messageText.contains("/sendForAllUser") && userService.findById(chatId).isPresent()) {
+                User user = userService.findById(chatId).get();
+                if(user.getRole() == Role.OWNER || user.getRole() == Role.ADMIN) {
+                    String textToSen = EmojiParser.parseToUnicode(messageText.substring(messageText.indexOf(" ")));
+                    List<User> users = userService.findAll();
+                    users.forEach(u -> sendMessage(u.getChatId(), textToSen));
+                } else {
+                    sendMessage(chatId, "You have no right for this operation");
+                }
             }
 
             switch (messageText) {
